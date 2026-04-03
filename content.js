@@ -343,5 +343,4 @@ Opening link in new tab...
   }
 };
 
-// Map of all top-level directories (for root ls)
-const ROOT_DIRS = Object.keys(FS);
+

@@ -80,8 +80,7 @@
   }
 
   /** Typewriter effect for long content. Returns a Promise. */
-  function typewrite(text, speed) {
-    speed = speed || 12; // ms per character
+  function typewrite(text, speed = 12) {
     return new Promise(function (resolve) {
       typewriterActive = true;
       const div = document.createElement('div');
@@ -428,13 +427,10 @@
     promptEl.textContent = buildPrompt();
     focusInput();
 
-    // Auto-cat welcome.txt on load
-    currentPath = ['home'];
-    promptEl.textContent = buildPrompt();
-    println(buildPrompt() + 'cat welcome.txt', 'command');
+    // Auto-display welcome.txt without mutating currentPath
+    println('$dascient:/home >> cat welcome.txt', 'command');
     const welcome = FS.home.children['welcome.txt'];
     typewrite(welcome.content, 4).then(function () {
-      currentPath = [];
       promptEl.textContent = buildPrompt();
       focusInput();
     });
