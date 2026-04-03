@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="DaScient Terminal — Strategic Enterprise Intelligence" />
+  <title>DaScient Terminal</title>
+  <style>
+    /* ── Reset ──────────────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ── Root & Typography ──────────────────────────────────────────────────── */
+    :root {
+      --bg:        #ffffff;
+      --fg:        #008000;
+      --fg-dark:   #005700;
+      --fg-dim:    #4a894a;
+      --fg-header: #006400;
+      --error:     #cc0000;
+      --link:      #0055cc;
+      --locked:    #aa6600;
+      --dir-color: #007700;
+      --font:      'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
+      --font-size: clamp(13px, 2vw, 16px);
+      --line-height: 1.6;
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--fg);
+      font-family: var(--font);
+      font-size: var(--font-size);
+      line-height: var(--line-height);
+      overflow: hidden;
+    }
+
+    /* ── Terminal container ─────────────────────────────────────────────────── */
+    #terminal {
+      width: 100%;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 20px 80px;   /* bottom padding keeps input visible on mobile */
+      cursor: text;
+      display: flex;
+      flex-direction: column;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Output area ────────────────────────────────────────────────────────── */
+    #output {
+      flex: 1;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .output-line {
+      display: block;
+      min-height: 1em;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Command echo */
+    .output-line.command  { color: var(--fg);        font-weight: bold; }
+    /* File/directory content */
+    .output-line.content  { color: var(--fg-dark);   }
+    /* Dimmed / secondary */
+    .output-line.dim      { color: var(--fg-dim);    }
+    /* Section headers */
+    .output-line.header   { color: var(--fg-header); font-weight: bold; letter-spacing: 0.05em; }
+    /* Errors */
+    .output-line.error    { color: var(--error);     }
+    /* Directory entries */
+    .output-line.dir      { color: var(--dir-color); }
+    /* File entries */
+    .output-line.file     { color: var(--fg);        }
+    /* Locked / restricted files */
+    .output-line.locked   { color: var(--locked);    }
+
+    /* External links */
+    .output-line.link a {
+      color: var(--link);
+      text-decoration: underline;
+    }
+    .output-line.link a:hover { opacity: 0.8; }
+
+    /* ── Input line ─────────────────────────────────────────────────────────── */
+    #input-line {
+      display: flex;
+      align-items: center;
+      margin-top: 6px;
+      flex-shrink: 0;
+      position: sticky;
+      bottom: 0;
+      background-color: var(--bg);
+      padding: 6px 0 4px;
+    }
+
+    #prompt {
+      color: var(--fg);
+      white-space: pre;
+      flex-shrink: 0;
+    }
+
+    /* Visible typed text */
+    #typed-text {
+      color: var(--fg);
+      white-space: pre;
+    }
+
+    /* Blinking block cursor */
+    #cursor {
+      display: inline-block;
+      width: 0.6em;
+      height: 1.1em;
+      background-color: var(--fg);
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* The actual input — visually hidden but focusable for keyboard capture */
+    #hidden-input {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: transparent;
+      caret-color: transparent;
+      font-family: var(--font);
+      font-size: var(--font-size);
+      /* Keep it accessible for mobile keyboard */
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    /* ── Scrollbar styling ──────────────────────────────────────────────────── */
+    #terminal::-webkit-scrollbar        { width: 6px; }
+    #terminal::-webkit-scrollbar-track  { background: var(--bg); }
+    #terminal::-webkit-scrollbar-thumb  { background: var(--fg-dim); border-radius: 3px; }
+
+    /* ── Mobile adjustments ─────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      #terminal { padding: 12px 12px 100px; }
+      :root { --font-size: 13px; }
+    }
+
+    /* ── Selection colour ───────────────────────────────────────────────────── */
+    ::selection        { background: var(--fg); color: var(--bg); }
+    ::-moz-selection   { background: var(--fg); color: var(--bg); }
+  </style>
+</head>
+<body>
+
+  <div id="terminal" role="main" aria-label="DaScient Terminal">
+    <div id="output" aria-live="polite" aria-atomic="false"></div>
+
+    <div id="input-line">
+      <span id="prompt" aria-hidden="true">$dascient:~ >> </span>
+      <span id="typed-text" aria-hidden="true"></span>
+      <span id="cursor"  aria-hidden="true"></span>
+      <!--
+        The hidden-input captures all keyboard input.
+        On mobile, tapping the terminal focuses it, popping up the virtual keyboard.
+      -->
+      <input
+        id="hidden-input"
+        type="text"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+        aria-label="Terminal input"
+      />
+    </div>
+  </div>
+
+  <!-- Google Fonts (optional — graceful degradation if offline) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- File-system content -->
+  <script src="content.js"></script>
+  <!-- Terminal logic -->
+  <script src="terminal.js"></script>
+</body>
+</html>
