@@ -48,7 +48,6 @@ function line(text: string, style: LineStyle = "default"): OutputLine {
 }
 
 
-
 // ── Commands ────────────────────────────────────────────────────────────────
 
 function help(): CommandResult {

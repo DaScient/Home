@@ -30,7 +30,7 @@ export default function Terminal() {
   const [inputValue, setInputValue] = useState("");
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const [history, setHistory] = useState<string[]>([]);
-  const [, setHistoryIdx] = useState(-1);
+  const historyIdxRef = useRef(-1);
   const [typewriterActive, setTypewriterActive] = useState(false);
   const [typewriterText, setTypewriterText] = useState("");
   const [typewriterDone, setTypewriterDone] = useState(0);
@@ -119,7 +119,7 @@ export default function Terminal() {
         if (next.length > 100) next.pop();
         return next;
       });
-      setHistoryIdx(-1);
+      historyIdxRef.current = -1;
 
       const result = executeCommand(trimmed, path);
 
@@ -175,25 +175,23 @@ export default function Terminal() {
         execute(val);
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setHistoryIdx((prev) => {
-          const next = prev < history.length - 1 ? prev + 1 : prev;
-          if (next >= 0 && next < history.length) {
-            setInputValue(history[next]);
-          }
-          return next;
-        });
+        const idx = historyIdxRef.current;
+        const next = idx < history.length - 1 ? idx + 1 : idx;
+        if (next >= 0 && next < history.length) {
+          setInputValue(history[next]);
+        }
+        historyIdxRef.current = next;
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHistoryIdx((prev) => {
-          if (prev > 0) {
-            const next = prev - 1;
-            setInputValue(history[next]);
-            return next;
-          } else {
-            setInputValue("");
-            return -1;
-          }
-        });
+        const idx = historyIdxRef.current;
+        if (idx > 0) {
+          const next = idx - 1;
+          setInputValue(history[next]);
+          historyIdxRef.current = next;
+        } else {
+          setInputValue("");
+          historyIdxRef.current = -1;
+        }
       } else if (e.key === "Tab") {
         e.preventDefault();
         const { completions, replaceFrom } = getCompletions(
@@ -229,7 +227,8 @@ export default function Terminal() {
 
   // Boot sequence
   useEffect(() => {
-    const welcome = (FS.home as { type: "dir"; children: Record<string, { type: "file"; content: string }> }).children["welcome.txt"];
+    const homeDir = FS.home as { type: "dir"; children: Record<string, { type: "file"; content: string }> };
+    const welcome = homeDir.children["welcome.txt"];
     appendLines([
       { text: "$dascient:/home >> cat welcome.txt", style: "command" },
     ]);
