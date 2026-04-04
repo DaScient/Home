@@ -21,7 +21,15 @@ export function truncate(text: string, maxLength: number = 500): string {
 
 /** Extract a plain-text summary from potentially formatted LLM output */
 export function extractSummary(text: string, sentenceCount: number = 2): string {
-  const sentences = text.split(/(?<=[.!?])\s+/);
+  // Split on sentence-ending punctuation followed by whitespace.
+  // Uses a compatible pattern that works in all JS environments.
+  const sentences = text.split(/([.!?])\s+/).reduce<string[]>((acc, part, i, arr) => {
+    if (i % 2 === 0) {
+      // Combine text with its trailing punctuation
+      acc.push(part + (arr[i + 1] ?? ""));
+    }
+    return acc;
+  }, []);
   return sentences.slice(0, sentenceCount).join(" ");
 }
 

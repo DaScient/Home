@@ -113,7 +113,8 @@ export default function CapabilityShowcase({ onModeSelect }: CapabilityShowcaseP
                         onModeSelect(cap.relatedMode);
                       }}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
                           e.stopPropagation();
                           onModeSelect(cap.relatedMode);
                         }

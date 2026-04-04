@@ -4,9 +4,9 @@
  * Collects raw data from configured feed sources.
  * Currently returns mock payloads; designed for real fetch
  * integration when live endpoints are available.
+ *
+ * Future: import { getActiveFeeds } from "./vibeConfig";
  */
-
-import { getActiveFeeds } from "./vibeConfig";
 
 export interface FeedItem {
   sourceId: string;
@@ -58,10 +58,8 @@ const MOCK_ITEMS: FeedItem[] = [
  * Returns mock data; swap with real fetch calls when endpoints are live.
  */
 export async function aggregateFeeds(): Promise<AggregatedFeed> {
-  // Acknowledge active feeds for future use
-  void getActiveFeeds();
-
   // Future: parallel fetch from each feed source
+  // const activeFeeds = getActiveFeeds();
   // const results = await Promise.allSettled(activeFeeds.map(fetchFeed));
 
   return {
