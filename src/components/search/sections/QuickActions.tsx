@@ -5,7 +5,7 @@ import type { SearchSectionProps } from "../sectionRegistry";
 /**
  * ----section: QuickActions----
  * Shortcut cards for common query categories.
- * Add or remove actions by editing the ACTIONS array below.
+ * Includes a hidden .vibe trigger that activates Vibe mode.
  */
 
 const ACTIONS = [
@@ -51,9 +51,20 @@ const ACTIONS = [
     description: "Open-source investigations and market research",
     prompt: "Describe open-source intelligence services",
   },
+  {
+    id: "vibe",
+    icon: "🌊",
+    title: ".vibe",
+    description: "Check the vibes — hidden sentiment engine",
+    prompt: ".vibe",
+    isVibeAction: true,
+  },
 ];
 
-export default function QuickActions({ onQueryChange }: SearchSectionProps) {
+export default function QuickActions({
+  onQueryChange,
+  onModeChange,
+}: SearchSectionProps) {
   return (
     <section className="flex flex-col gap-4">
       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted">
@@ -63,8 +74,17 @@ export default function QuickActions({ onQueryChange }: SearchSectionProps) {
         {ACTIONS.map((action) => (
           <button
             key={action.id}
-            onClick={() => onQueryChange(action.prompt)}
-            className="group flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 text-left transition-all hover:border-accent/30 hover:bg-surface-hover hover:shadow-sm"
+            onClick={() => {
+              if ("isVibeAction" in action && action.isVibeAction && onModeChange) {
+                onModeChange("vibe");
+              }
+              onQueryChange(action.prompt);
+            }}
+            className={`group flex flex-col gap-2 rounded-xl border p-4 text-left transition-all hover:shadow-sm ${
+              "isVibeAction" in action && action.isVibeAction
+                ? "border-accent/20 bg-accent-light/30 hover:border-accent/40 hover:bg-accent-light/50"
+                : "border-border bg-surface hover:border-accent/30 hover:bg-surface-hover"
+            }`}
           >
             <div className="flex items-center gap-3">
               <span className="text-2xl" role="img" aria-label={action.title}>

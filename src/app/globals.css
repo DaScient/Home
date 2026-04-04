@@ -45,3 +45,209 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* ── Terminal styles ─────────────────────────────────────────────────────── */
+
+.terminal-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.terminal-container {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 20px 80px;
+  cursor: text;
+  display: flex;
+  flex-direction: column;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ffffff;
+  color: #008000;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", Courier,
+    monospace;
+  font-size: clamp(13px, 2vw, 16px);
+  line-height: 1.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .terminal-container {
+    background-color: #0a0f0a;
+    color: #00cc00;
+  }
+  .terminal-prompt {
+    color: #00cc00;
+  }
+  .terminal-typed {
+    color: #00cc00;
+  }
+  .terminal-cursor {
+    background-color: #00cc00;
+  }
+  .terminal-command {
+    color: #00cc00;
+  }
+  .terminal-content {
+    color: #00aa00;
+  }
+  .terminal-dim {
+    color: #338833;
+  }
+  .terminal-header {
+    color: #00ff00;
+  }
+  .terminal-dir {
+    color: #00dd00;
+  }
+  .terminal-file {
+    color: #00cc00;
+  }
+  .terminal-locked {
+    color: #ccaa00;
+  }
+  .terminal-input-line {
+    background-color: #0a0f0a;
+  }
+}
+
+.terminal-output {
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.terminal-line {
+  display: block;
+  min-height: 1em;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-command {
+  color: #008000;
+  font-weight: bold;
+}
+.terminal-content {
+  color: #005700;
+}
+.terminal-dim {
+  color: #4a894a;
+}
+.terminal-header {
+  color: #006400;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+.terminal-error {
+  color: #cc0000;
+}
+.terminal-dir {
+  color: #007700;
+}
+.terminal-file {
+  color: #008000;
+}
+.terminal-locked {
+  color: #aa6600;
+}
+.terminal-default {
+  color: inherit;
+}
+
+.terminal-link a {
+  color: #0055cc;
+  text-decoration: underline;
+}
+.terminal-link a:hover {
+  opacity: 0.8;
+}
+
+.terminal-input-line {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  background-color: #ffffff;
+  padding: 6px 0 4px;
+}
+
+.terminal-prompt {
+  color: #008000;
+  white-space: pre;
+  flex-shrink: 0;
+}
+
+.terminal-typed {
+  color: #008000;
+  white-space: pre;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  background-color: #008000;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+  animation: terminal-blink 1s step-end infinite;
+}
+
+@keyframes terminal-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal-hidden-input {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  font-family: "JetBrains Mono", "Fira Code", "Courier New", Courier,
+    monospace;
+  font-size: clamp(13px, 2vw, 16px);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Scrollbar */
+.terminal-container::-webkit-scrollbar {
+  width: 6px;
+}
+.terminal-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.terminal-container::-webkit-scrollbar-thumb {
+  background: #4a894a;
+  border-radius: 3px;
+}
+
+/* Selection */
+.terminal-container ::selection {
+  background: #008000;
+  color: #ffffff;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .terminal-container {
+    padding: 12px 12px 100px;
+    font-size: 13px;
+  }
+}

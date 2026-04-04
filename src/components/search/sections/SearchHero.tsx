@@ -2,13 +2,28 @@
 
 import { useState, useCallback } from "react";
 import type { SearchSectionProps } from "../sectionRegistry";
+import type { SearchMode } from "../lib/hooks/useSearchState";
 
 /**
  * ----section: SearchHero----
- * Primary search input and branding area.
- * This is the main entry point for user queries.
+ * Primary search input, branding area, and mode switcher.
+ * This is the main entry point for user queries and mode navigation.
  */
-export default function SearchHero({ query, onQueryChange }: SearchSectionProps) {
+
+const MODES: { id: SearchMode; label: string; icon: string }[] = [
+  { id: "standard", label: "Search", icon: "🔍" },
+  { id: "vibe", label: "Vibes", icon: "🌊" },
+  { id: "prompt-hub", label: "Prompts", icon: "🧪" },
+  { id: "agentic", label: "Agentic", icon: "🤖" },
+  { id: "intro", label: "Intro", icon: "🎯" },
+];
+
+export default function SearchHero({
+  query,
+  onQueryChange,
+  activeMode = "standard",
+  onModeChange,
+}: SearchSectionProps) {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = useCallback(
@@ -31,6 +46,27 @@ export default function SearchHero({ query, onQueryChange }: SearchSectionProps)
         </p>
       </div>
 
+      {/* ── Mode Switcher ──────────────────────────────────────── */}
+      {onModeChange && (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {MODES.map((mode) => (
+            <button
+              key={mode.id}
+              onClick={() => onModeChange(mode.id)}
+              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+                activeMode === mode.id
+                  ? "bg-accent text-white shadow-sm"
+                  : "border border-border bg-surface text-muted hover:border-accent/30 hover:text-foreground"
+              }`}
+            >
+              <span>{mode.icon}</span>
+              {mode.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Search Input ───────────────────────────────────────── */}
       <form onSubmit={handleSubmit} className="w-full max-w-2xl">
         <div
           className={`flex items-center gap-3 rounded-2xl border-2 bg-background px-5 py-3 shadow-sm transition-all ${
@@ -59,7 +95,13 @@ export default function SearchHero({ query, onQueryChange }: SearchSectionProps)
             onChange={(e) => onQueryChange(e.target.value)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder="Ask DaScient anything..."
+            placeholder={
+              activeMode === "vibe"
+                ? "Check the vibes on..."
+                : activeMode === "agentic"
+                  ? "Deploy agent to research..."
+                  : "Ask DaScient anything..."
+            }
             className="flex-1 bg-transparent text-lg outline-none placeholder:text-muted/60"
             aria-label="Search query"
           />
@@ -67,7 +109,7 @@ export default function SearchHero({ query, onQueryChange }: SearchSectionProps)
             type="submit"
             className="shrink-0 rounded-xl bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
-            Search
+            {activeMode === "agentic" ? "Deploy" : "Search"}
           </button>
         </div>
       </form>

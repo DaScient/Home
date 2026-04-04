@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import type { SearchMode } from "./lib/hooks/useSearchState";
 
 /* ============================================================
  * SEARCH SECTION REGISTRY
@@ -17,7 +18,8 @@ import type { ComponentType } from "react";
  *    1. Move entries up or down in the SEARCH_SECTIONS array
  *
  * Each section receives the shared SearchSectionProps so it can
- * read the current query and update it.
+ * read the current query and update it. Sections can be scoped
+ * to specific modes using the `modes` field.
  * ============================================================ */
 
 // ---- Section Props (shared across all sections) ----
@@ -26,6 +28,10 @@ export interface SearchSectionProps {
   query: string;
   /** Callback to update the search query */
   onQueryChange: (query: string) => void;
+  /** Currently active search mode */
+  activeMode?: SearchMode;
+  /** Callback to switch modes */
+  onModeChange?: (mode: SearchMode) => void;
 }
 
 // ---- Section Registration Entry ----
@@ -38,6 +44,11 @@ export interface SearchSectionEntry {
   component: ComponentType<SearchSectionProps>;
   /** When false the section is skipped during rendering */
   enabled: boolean;
+  /**
+   * Modes where this section is visible.
+   * If omitted or empty, the section appears in ALL modes.
+   */
+  modes?: SearchMode[];
 }
 
 // ---- Section Imports ----
@@ -55,30 +66,35 @@ const SEARCH_SECTIONS: SearchSectionEntry[] = [
     label: "Search Hero",
     component: SearchHero,
     enabled: true,
+    // Visible in all modes (hero always shown)
   },
   {
     id: "search-results",
     label: "Search Results",
     component: SearchResults,
     enabled: true,
+    modes: ["standard", "vibe", "agentic"],
   },
   {
     id: "quick-actions",
     label: "Quick Actions",
     component: QuickActions,
     enabled: true,
+    modes: ["standard", "vibe", "intro"],
   },
   {
     id: "search-history",
     label: "Recent Searches",
     component: SearchHistory,
     enabled: true,
+    modes: ["standard", "vibe"],
   },
   {
     id: "search-insights",
     label: "Insights & Recommendations",
     component: SearchInsights,
     enabled: true,
+    modes: ["standard", "vibe"],
   },
 
   /* ----section: Add new sections above this line----
@@ -88,13 +104,23 @@ const SEARCH_SECTIONS: SearchSectionEntry[] = [
    *   label: "My New Section",
    *   component: MyNewSection,
    *   enabled: true,
+   *   modes: ["standard"],
    * },
    */
 ];
 
-/** Returns only the sections that are currently enabled. */
-export function getEnabledSections(): SearchSectionEntry[] {
-  return SEARCH_SECTIONS.filter((s) => s.enabled);
+/**
+ * Returns only the sections that are currently enabled.
+ * If a mode is specified, also filters by mode visibility.
+ */
+export function getEnabledSections(mode?: SearchMode): SearchSectionEntry[] {
+  return SEARCH_SECTIONS.filter((s) => {
+    if (!s.enabled) return false;
+    if (mode && s.modes && s.modes.length > 0) {
+      return s.modes.includes(mode);
+    }
+    return true;
+  });
 }
 
 export default SEARCH_SECTIONS;
